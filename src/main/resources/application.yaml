@@ -19,3 +19,10 @@ spring:
       mode: always
       data-locations: classpath:data.sql
       continue-on-error: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+  api-docs:
+    path: /v3/api-docs
