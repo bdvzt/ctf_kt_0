@@ -1,14 +1,11 @@
 package com.example.ctf_kt_0.controller;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.example.ctf_kt_0.repository.UserRepository;
-import jakarta.servlet.http.HttpSession;
-
+import com.example.ctf_kt_0.dto.PublicUserDTO;
+import com.example.ctf_kt_0.dto.UserDTO;
 import com.example.ctf_kt_0.entity.User;
-import jakarta.persistence.EntityManager;
+import com.example.ctf_kt_0.service.UserService;
+import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,26 +15,20 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserRepository userRepository;
-    private final EntityManager entityManager;
+    private final UserService userService;
 
     @GetMapping("/me")
     public User me(HttpSession session) {
-        Long id = (Long) session.getAttribute("userId");
-        return userRepository.findById(id).orElseThrow();
+        return userService.getCurrentUser(session);
     }
 
-    // ⚠️ IDOR уязвимость
     @GetMapping("/{id}")
-    public User getById(@PathVariable Long id) {
-        return userRepository.findById(id).orElseThrow();
+    public UserDTO getById(@PathVariable Long id) {
+        return userService.getUserById(id);
     }
 
-    // ⚠️ SQL-инъекция
     @GetMapping("/search")
-    public List<User> search(@RequestParam String q) {
-        String jpql = "SELECT u FROM User u WHERE u.username LIKE '%" + q + "%'";
-        return entityManager.createQuery(jpql, User.class).getResultList();
+    public List<PublicUserDTO> search(@RequestParam String q) {
+        return userService.searchUsers(q);
     }
 }
-

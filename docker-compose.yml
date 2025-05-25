@@ -8,20 +8,22 @@ services:
     depends_on:
       - db
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/ctf
-      SPRING_DATASOURCE_USERNAME: ctfuser
-      SPRING_DATASOURCE_PASSWORD: secret
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      JWT_SECRET: q8kV9n+1b3yDRozLF+dbY56hIQ1M4/kMEwJZPHhA2sM=
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/ctf_kt_0
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    restart: on-failure
 
   db:
-    image: postgres:16
+    image: postgres:15
+    container_name: ctf_db
     environment:
-      POSTGRES_DB: ctf
-      POSTGRES_USER: ctfuser
-      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: ctf_kt_0
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5435:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pg_data:/var/lib/postgresql/data
 
 volumes:
-  pgdata:
+  pg_data:
