@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: kt-0
+
+  profiles:
+    active: h2  # default profile
+
+jwt:
+  secret: q8kV9n+1b3yDRozLF+dbY56hIQ1M4/kMEwJZPHhA2sM=
+  expirationMs: 3600000
+
+server:
+  port: 8080
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+  api-docs:
+    path: /v3/api-docs

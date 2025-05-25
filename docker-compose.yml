@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/ctf
+      SPRING_DATASOURCE_USERNAME: ctfuser
+      SPRING_DATASOURCE_PASSWORD: secret
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      JWT_SECRET: q8kV9n+1b3yDRozLF+dbY56hIQ1M4/kMEwJZPHhA2sM=
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ctf
+      POSTGRES_USER: ctfuser
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
