@@ -1,34 +1,37 @@
 package com.example.ctf_kt_0.controller;
 
 import com.example.ctf_kt_0.dto.AuthRequest;
-import com.example.ctf_kt_0.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
+import com.example.ctf_kt_0.repository.UserRepository;
+import jakarta.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthenticationManager authenticationManager;
-    private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthRequest request) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-        );
+    public ResponseEntity<String> login(@RequestBody AuthRequest request, HttpSession session) {
+        return userRepository.findByUsername(request.getUsername())
+                .filter(u -> u.getPassword().equals(request.getPassword()))
+                .map(user -> {
+                    session.setAttribute("userId", user.getId());
+                    return ResponseEntity.ok("Logged in as " + user.getUsername());
+                })
+                .orElse(ResponseEntity.status(403).body("Invalid credentials"));
+    }
 
-        String token = jwtUtil.generateToken(authentication.getName());
-        return ResponseEntity.ok(Map.of("token", token));
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(HttpSession session) {
+        session.invalidate();
+        return ResponseEntity.ok("Logged out");
     }
 }
