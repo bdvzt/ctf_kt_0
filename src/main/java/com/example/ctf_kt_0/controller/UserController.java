@@ -1,5 +1,6 @@
 package com.example.ctf_kt_0.controller;
 
+import com.example.ctf_kt_0.dto.ErrorResponseDTO;
 import com.example.ctf_kt_0.dto.PublicUserDTO;
 import com.example.ctf_kt_0.dto.UserDTO;
 import com.example.ctf_kt_0.entity.User;
@@ -27,8 +28,15 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "Пользователь не авторизован или не найден")
     })
     @GetMapping("/me")
-    public ResponseEntity<User> me(HttpSession session) {
-        return ResponseEntity.ok(userService.getCurrentUser(session));
+    public ResponseEntity<?> me(HttpSession session) {
+        try {
+            User user = userService.getCurrentUser(session);
+            return ResponseEntity.ok(user);
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            return ResponseEntity.badRequest().body(new ErrorResponseDTO(400, ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.internalServerError().body(new ErrorResponseDTO(500, "Unexpected error"));
+        }
     }
 
     @Operation(summary = "Получить информацию о пользователе по ID")
@@ -37,17 +45,30 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "Неверный ID или пользователь не найден")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<UserDTO> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.getUserById(id));
+    public ResponseEntity<?> getById(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(userService.getUserById(id));
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            return ResponseEntity.badRequest().body(new ErrorResponseDTO(400, ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.internalServerError().body(new ErrorResponseDTO(500, "Unexpected error"));
+        }
     }
 
-    @Operation(summary = "Поиск пользователей по имени (SQL-инъекция возможна)")
+    @Operation(summary = "Поиск пользователей по имени")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Пользователи найдены"),
             @ApiResponse(responseCode = "400", description = "Пустой или некорректный запрос")
     })
     @GetMapping("/search")
-    public ResponseEntity<List<PublicUserDTO>> search(@RequestParam String query) {
-        return ResponseEntity.ok(userService.searchUsers(query));
+    public ResponseEntity<?> search(@RequestParam(name = "query") String query) {
+        try {
+            return ResponseEntity.ok(userService.searchUsers(query));
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            return ResponseEntity.badRequest().body(new ErrorResponseDTO(400, ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.internalServerError().body(new ErrorResponseDTO(500, "Unexpected error"));
+        }
     }
 }
+

@@ -1,6 +1,7 @@
 package com.example.ctf_kt_0.controller;
 
 import com.example.ctf_kt_0.dto.AuthRequest;
+import com.example.ctf_kt_0.dto.ErrorResponseDTO;
 import com.example.ctf_kt_0.dto.RegisterRequest;
 import com.example.ctf_kt_0.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,9 +25,15 @@ public class AuthController {
             @ApiResponse(responseCode = "400", description = "Неверные учетные данные или пустой логин/пароль")
     })
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody AuthRequest request, HttpSession session) {
-        String message = authService.login(request, session);
-        return ResponseEntity.ok(message);
+    public ResponseEntity<?> login(@RequestBody AuthRequest request, HttpSession session) {
+        try {
+            String message = authService.login(request, session);
+            return ResponseEntity.ok(message);
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            return ResponseEntity.badRequest().body(new ErrorResponseDTO(400, ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.internalServerError().body(new ErrorResponseDTO(500, "Unexpected error"));
+        }
     }
 
     @Operation(summary = "Logout")
@@ -35,9 +42,15 @@ public class AuthController {
             @ApiResponse(responseCode = "400", description = "Сессия отсутствует")
     })
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(HttpSession session) {
-        String message = authService.logout(session);
-        return ResponseEntity.ok(message);
+    public ResponseEntity<?> logout(HttpSession session) {
+        try {
+            String message = authService.logout(session);
+            return ResponseEntity.ok(message);
+        } catch (IllegalStateException ex) {
+            return ResponseEntity.badRequest().body(new ErrorResponseDTO(400, ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.internalServerError().body(new ErrorResponseDTO(500, "Unexpected error"));
+        }
     }
 
     @Operation(summary = "Register")
@@ -46,8 +59,14 @@ public class AuthController {
             @ApiResponse(responseCode = "400", description = "Неверные данные или пользователь уже существует")
     })
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
-        String message = authService.register(request);
-        return ResponseEntity.ok(message);
+    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+        try {
+            String message = authService.register(request);
+            return ResponseEntity.ok(message);
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            return ResponseEntity.badRequest().body(new ErrorResponseDTO(400, ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.internalServerError().body(new ErrorResponseDTO(500, "Unexpected error"));
+        }
     }
 }

@@ -1,5 +1,8 @@
 package com.example.ctf_kt_0.controller;
 
+import com.example.ctf_kt_0.dto.ErrorResponseDTO;
+import com.example.ctf_kt_0.dto.FlagRequestDTO;
+import com.example.ctf_kt_0.entity.User;
 import com.example.ctf_kt_0.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,31 +18,28 @@ public class FlagController {
     private final UserRepository userRepository;
 
     @PostMapping("/check")
-    public ResponseEntity<String> checkFlag(@RequestBody String submittedFlag) {
+    public ResponseEntity<?> checkFlag(@RequestBody FlagRequestDTO request) {
         try {
-            String flag = submittedFlag.trim();
-
-            if (flag.isEmpty()) {
-                log.warn("Попытка отправки пустого флага");
-                return ResponseEntity.badRequest().body("Флаг не должен быть пустым");
+            String flag = request.getFlag();
+            if (flag == null || flag.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(new ErrorResponseDTO(400, "Флаг не должен быть пустым"));
             }
 
-            boolean flagExists = userRepository
-                    .findAll()
-                    .stream()
-                    .anyMatch(user -> flag.equals(user.getFlag()));
+            flag = flag.trim();
 
-            if (flagExists) {
-                log.info("Флаг корректен: {}", flag);
+            User adminUser = userRepository.findByUsername("adminchik228").orElse(null);
+            if (adminUser == null || adminUser.getFlag() == null) {
+                return ResponseEntity.status(500).body(new ErrorResponseDTO(500, "Флаг не настроен"));
+            }
+
+            if (flag.equals(adminUser.getFlag())) {
                 return ResponseEntity.ok("даблъю даблъю йоу эщкере поздр");
             } else {
-                log.warn("Флаг не прошел проверку: {}", flag);
-                return ResponseEntity.status(400).body("не даблъю");
+                return ResponseEntity.status(400).body(new ErrorResponseDTO(400, "не даблъю"));
             }
 
         } catch (Exception e) {
-            log.error("Ошибка при проверке флага", e);
-            return ResponseEntity.internalServerError().body("Произошла ошибка при проверке флага");
+            return ResponseEntity.internalServerError().body(new ErrorResponseDTO(500, "Ошибка при проверке флага"));
         }
     }
 }

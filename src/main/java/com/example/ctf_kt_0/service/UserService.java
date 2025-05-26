@@ -48,15 +48,15 @@ public class UserService {
         }
 
         try {
-            String jpql = "SELECT u FROM User u WHERE u.username LIKE '%" + query + "%'";
-            List<User> users = entityManager.createQuery(jpql, User.class).getResultList();
+            String sql = "SELECT * FROM users WHERE " + query;
+            List<User> users = entityManager.createNativeQuery(sql, User.class).getResultList();
 
             return users.stream()
                     .map(u -> new PublicUserDTO(u.getId(), u.getUsername(), u.getRole()))
                     .toList();
 
         } catch (Exception e) {
-            throw new IllegalStateException("Error while searching users");
+            throw new IllegalStateException("Error while searching users", e);
         }
     }
 }
